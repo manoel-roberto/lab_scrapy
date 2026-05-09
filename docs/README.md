@@ -9,6 +9,8 @@ Aqui, você não aprenderá apenas a "fazer código", mas a entender a **filosof
 
 ## 🗺️ Mapa da Jornada (Capítulos)
 
+0. **[Mapa do Repositório](MAPA_DO_REPOSITORIO.md)**
+   * Onde está cada arquivo? Um guia de navegação para não se perder no código.
 1. **[Capítulo 01: Fundamentos de Web Scraping](01-fundamentos-web-scraping.md)**
    * Do "Olá Mundo" do HTTP à resiliência contra servidores legados Apache 2.2.
 2. **[Capítulo 02: Inteligência Artificial Local](02-inteligencia-artificial-local.md)**
