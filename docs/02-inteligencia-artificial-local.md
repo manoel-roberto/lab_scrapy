@@ -12,18 +12,25 @@
 
 No laboratório do DOE-BA, usamos dois tipos de "cérebros":
 
-- **NLP Estatístico (Spacy/NER):** Imagine um **especialista em etiquetas**. Ele é muito rápido e treinado apenas para reconhecer nomes de pessoas, organizações e datas. Ele não sabe conversar, mas sabe identificar entidades num piscar de olhos.
-- **IA Generativa (LLM/Ollama):** Imagine um **poliglota erudito**. Ele entende nuances, sarcasmo e consegue resumir textos complexos. Ele é lento e exige muita memória, mas é extremamente inteligente.
+- **NLP Estatístico (Spacy/NER):** Um especialista em etiquetas. Muito rápido, reconhece nomes de pessoas, organizações e valores sem "pensar" muito.
+- **IA Generativa (LLM/Ollama):** Um poliglota erudito. Entende o contexto, resume e traduz intenções complexas em JSON.
 
 ---
 
-## 2. A Estratégia do Funil: Poupando Energia
+## 🔍 Mergulho no Código: O Funil em Ação
 
-Não usamos um LLM caro para ler cada linha do Diário Oficial. Isso seria como usar uma Ferrari para ir até a padaria na esquina. Usamos um **funil de triagem**:
+Toda a lógica de decisão reside em `src/intelligence/engine.py`. O fluxo segue um funil rigoroso para poupar seu hardware:
 
-1. **Regex (Filtro de Areia):** Um código simples que busca palavras-chave (ex: "Licitação"). Se não achar nada, descarta o texto instantaneamente.
-2. **NER (Filtro de Água):** O Spacy entra em ação para extrair nomes e valores dos textos que passaram pelo Regex.
-3. **LLM (O Destilador):** Apenas os textos mais importantes chegam ao `qwen2.5:1.5b` do Ollama para uma análise semântica profunda e estruturação final.
+### Camada 1: O Filtro de Areia (Regex)
+O método `camada_1_regex` utiliza expressões regulares para uma busca ultra-veloz. Se um texto não contém nenhuma palavra-chave da sua `watchlist.yaml`, ele é descartado imediatamente, salvando ciclos de GPU/CPU.
+
+### Camada 2: O Filtro de Água (Spacy NER)
+Se o texto for relevante, instanciamos o modelo `pt_core_news_sm` do **Spacy**. No arquivo `src/intelligence/engine.py`, o método `camada_2_spacy_ner` extrai entidades nomeadas. Isso nos dá uma estrutura básica (Pessoas e Órgãos) com custo computacional baixo.
+
+### Camada 3: O Destilador (Ollama)
+Quando a complexidade aumenta (ex: extrair valores de contratos complexos), o método `camada_3_ollama_fallback` dispara uma chamada assíncrona ao **Ollama**. 
+- **Modelo:** `qwen2.5:1.5b`.
+- **Segurança:** Após a resposta do LLM, os dados são validados novamente pelo **Pydantic** para garantir que a IA não "alucinou" um JSON quebrado.
 
 ---
 
@@ -41,20 +48,20 @@ docker exec -it doe_ollama ollama pull qwen2.5:1.5b
 
 ## 4. Para Aprofundar
 
-- **Analogia da Matrix:** Imagine que o **Spacy** é o código verde da Matrix (vê a estrutura), enquanto o **Ollama** é o Neo (entende o significado e o propósito).
-- **Pesquise sobre:** "Quantização de modelos (GGUF)". Entenda como modelos gigantes cabem em computadores comuns.
-- **Estude o conceito:** "Zero-shot vs Few-shot Prompting".
+- **Pesquise por:** "NLP Named Entity Recognition (NER) vs LLM" para entender os trade-offs.
+- **Estude o conceito:** "Pydantic output parsing for LLMs".
 
 ---
 
 ```mermaid
 graph TD
-    A[Texto Bruto do Diário] --> B{Camada 1: Regex}
-    B -- Irrelevante --> C[Descarte]
-    B -- Possível Match --> D[Camada 2: Spacy NER]
-    D --> E[Extração de Entidades: Nomes/Datas]
-    E --> F{Camada 3: Ollama LLM}
-    F --> G[JSON Estruturado / Insight Semântico]
+    A[src/core/models.py: AtoOficial] --> B[src/intelligence/engine.py]
+    B --> C{Camada 1: Regex}
+    C -- False --> D[Descarte]
+    C -- True --> E[Camada 2: Spacy NER]
+    E --> F[Camada 3: Ollama Call]
+    F --> G[Validação Pydantic Final]
+    G --> H[Salvar: src/persistence/pg_repository.py]
 ```
 
 ---

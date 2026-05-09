@@ -10,45 +10,44 @@
 
 ## 1. Matemática Sem Dor: O que é um Embedding?
 
-Imagine que cada palavra ou frase é uma estrela no céu. Estrelas que brilham sobre temas parecidos (ex: "Carro" e "Automóvel") ficam próximas no mapa estelar.
-
-Um **Embedding** é simplesmente a latitude e longitude dessa estrela em um mapa de 768 dimensões. Transformamos o texto em uma lista de números para que o computador possa calcular a distância entre eles.
+Imagine que cada palavra ou frase é uma estrela no céu. Estrelas que brilham sobre temas parecidos (ex: "Carro" e "Automóvel") ficam próximas no mapa estelar. Transformamos o texto em uma lista de números (vetor) para que o computador possa calcular a distância entre eles.
 
 ---
 
-## 2. Similaridade de Cosseno (`<=>`)
+## 🔍 Mergulho no Código: O Pipeline de Vetores
 
-Diferente de uma busca no Google (que busca a palavra exata), a **Similaridade de Cosseno** olha para a **direção** do vetor. 
+### A. Fragmentação Inteligente (Chunking)
+No arquivo `src/intelligence/chunker.py`, implementamos a função `chunk_text`. 
+- **Lógica:** Dividimos o texto em blocos de **600 palavras**. 
+- **Overlap (10%):** Deixamos 60 palavras de sobreposição entre um bloco e outro. Isso garante que se um nome próprio for cortado ao meio, ele aparecerá inteiro no próximo bloco, preservando o contexto vital para a busca.
 
-- Se eu busco "Fraude em licitação", o sistema pode encontrar um texto que diz "Irregularidade no processo de compra", mesmo sem as palavras "fraude" ou "licitação", porque os vetores apontam para a mesma direção semântica.
+### B. Vetorização Assíncrona
+O arquivo `src/intelligence/embeddings.py` gerencia a interface com o modelo `nomic-embed-text` do Ollama. Cada fragmento de texto vira um vetor de **768 dimensões**.
 
----
-
-## 3. Chunking e Overlap: A Arte de Não Cortar o Contexto
-
-Não podemos dar um PDF de 500 páginas de uma vez para a IA. Precisamos cortá-lo em pedaços (**Chunks**).
-
-### A Regra de Ouro: 600 palavras + 10% de Overlap
-- **Chunking (600 palavras):** É o tamanho ideal para o modelo `nomic-embed-text` entender o parágrafo.
-- **Overlap (60 palavras):** Imagine que você está cortando uma corda. Se você cortar exatamente no meio de uma frase importante, o sentido se perde. O overlap garante que o final do Pedaço A esteja no início do Pedaço B, mantendo a conexão entre as ideias.
+### C. A Busca em Milissegundos
+O segredo da performance está em `src/persistence/pg_repository.py`. Utilizamos o banco de dados PostgreSQL com a extensão **pgvector**. A busca semântica acontece através do operador `<=>`:
+```sql
+SELECT texto_chunk FROM atos_chunks 
+ORDER BY embedding <=> $1::vector LIMIT 5;
+```
+Este operador calcula a **Similaridade de Cosseno** diretamente no banco de dados, permitindo encontrar temas correlatos em milissegundos, mesmo em bases com milhares de documentos.
 
 ---
 
 ## 4. Para Aprofundar
 
-- **Pesquise sobre:** "HNSW (Hierarchical Navigable Small World)" no pgvector. É como criamos índices para buscas ultra-rápidas em milhões de vetores.
-- **Estude o conceito:** "Retrieval-Augmented Generation (RAG)". Como a IA usa os pedaços que encontramos para gerar uma resposta precisa.
+- **Pesquise por:** "HNSW (Hierarchical Navigable Small World) index no PostgreSQL" para entender como escalar buscas vetoriais.
+- **Estude o conceito:** "Cosine Similarity vs Euclidean Distance".
 
 ---
 
 ```mermaid
 graph LR
-    A[Ato Oficial Completo] --> B[Limpeza de Texto]
-    B --> C[Chunking: 600 palavras]
-    C --> D[Overlap: 10%]
-    D --> E[Vetorização: nomic-embed-text]
-    E --> F[Banco de Dados: pgvector]
-    F --> G{Busca: Similaridade de Cosseno}
+    A[Ato Oficial] --> B[src/intelligence/chunker.py]
+    B --> C[src/intelligence/embeddings.py]
+    C --> D[src/persistence/pg_repository.py]
+    D --> E{SQL: <=> operator}
+    E --> F[Resultado Semântico]
 ```
 
 ---

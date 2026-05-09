@@ -29,41 +29,46 @@ No modelo **Assíncrono (Httpx + Asyncio)**, você pede o café, recebe um pager
 
 ---
 
-## 3. O Desafio do Apache 2.2.22: O Velho Bibliotecário
+## 🔍 Mergulho no Código: Onde a Mágica Acontece
 
-O servidor do DOE-BA usa uma tecnologia antiga (Apache 2.2.22). Se você tentar fazer 100 perguntas ao mesmo tempo (requisições paralelas), ele vai se assustar e te expulsar (bloqueio de IP).
+Nesta plataforma, a teoria se traduz em arquivos específicos:
 
-### A Solução: `asyncio.Semaphore(8)`
-Pense no Semáforo como um **porteiro** que só deixa 8 pessoas entrarem na biblioteca por vez. 
-- Quando um worker termina de baixar um arquivo, ele sai, e o porteiro deixa o próximo entrar.
-- Isso mantém a velocidade alta, mas dentro do limite que o servidor aguenta.
+### A. Resiliência e Polidez
+No arquivo `src/core/client.py`, implementamos o **Porteiro Digital** usando:
+```python
+self.semaphore = asyncio.Semaphore(8)
+```
+Isso garante que nunca ultrapassaremos 8 conexões simultâneas, respeitando as limitações do **Apache/2.2.22** da EGBA e evitando bloqueios por exaustão de recursos.
+
+### B. O Bypass do Modal
+O servidor da EGBA costuma exibir um modal informativo ("CONTINUAR SEM CADASTRO"). Para automatizar a descoberta de novas edições, usamos o **Playwright** em `src/core/client.py` (método `get_edition_metadata_html`), que simula o clique humano antes de capturar o HTML da página.
+
+### C. Integridade do Dado (Pydantic)
+Antes de qualquer processamento, o dado bruto é validado pelo arquivo `src/core/models.py`. Usamos o `AtoOficial(BaseModel)` do **Pydantic** para garantir que cada ato tenha um identificador, título e texto integral válidos. Se o dado estiver quebrado, ele nem entra no funil de IA.
 
 ---
 
 ## 4. Para Aprofundar
 
 > [!IMPORTANT]
-> **Material de Estudo Obrigatório:** 
-> Assista às **"Lives de Python" (canal do Eduardo Mendes/Dunossauro)**, especificamente da **#20 à #27**. Lá ele destrincha Selenium, Requests e a arte de navegar no DOM.
-
-- **Pesquise sobre:** "HTTP Keep-Alive" e como ele economiza recursos em raspagens longas.
-- **Estude o padrão:** "Page Object Pattern" para organizar seus seletores CSS/XPath.
+> **Material de Estudo:** 
+> - **Pesquise por:** "Asyncio Semaphores em Python" para entender como gerenciar concorrência.
+> - **Estude o padrão:** "Page Object Pattern" e como o Playwright lida com SPAs.
 
 ---
 
 ```mermaid
 sequenceDiagram
-    participant S as Scraper (Core)
-    participant P as Porteiro (Semaphore 8)
+    participant S as src/core/client.py
+    participant M as src/core/models.py
     participant B as Servidor DOE-BA (Apache 2.2)
 
     Note over S: Deseja baixar 50 atos
-    S->>P: Posso entrar?
-    P->>S: Sim (Vaga 1/8)
-    S->>B: GET /ato_123
-    B-->>S: 200 OK (PDF/HTML)
-    S->>P: Saindo! (Vaga liberada)
-    Note over S: Repete até concluir
+    S->>B: GET /edicao (Bypass Modal Playwright)
+    B-->>S: HTML da Edição
+    S->>M: Valida Esquema (Pydantic)
+    M-->>S: Objeto AtoOficial Válido
+    S->>B: fetch_content (Semaphore 8 + Jitter)
 ```
 
 ---
