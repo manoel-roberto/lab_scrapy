@@ -22,6 +22,13 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Configuração de Variáveis de Ambiente
+O sistema utiliza um arquivo `.env` para gerenciar configurações sensíveis e de infraestrutura.
+```bash
+cp .env.example .env
+# Edite o .env se necessário (ex: DATABASE_URL, OLLAMA_HOST)
+```
+
 ### Configuração do Antigravity Kit (AI-Pair)
 Se você estiver usando o assistente Antigravity, inicialize o kit:
 ```bash
@@ -63,6 +70,7 @@ uvicorn src.api.main:app --reload
 # Em um novo terminal com venv ativo
 python3 -m src.worker
 ```
+*Dica: Os logs de execução serão salvos estruturadamente em `data/logs/`.*
 
 ### Iniciar o Dashboard Streamlit
 ```bash

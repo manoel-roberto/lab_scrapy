@@ -25,6 +25,13 @@ O pipeline segue o fluxo **RAG (Retrieval-Augmented Generation) Local**:
 - **Database:** PostgreSQL + pgvector.
 - **UI:** Streamlit.
 
+## 🚦 Configuração Rápida
+1. **Clone & Venv:** Setup do ambiente Python.
+2. **Ambiente:** `cp .env.example .env` e configure suas variáveis.
+3. **Infra:** `docker-compose up -d` para o banco de dados.
+4. **IA:** `ollama pull qwen2.5:1.5b` e `nomic-embed-text`.
+5. **Run:** `/start-dev` (via Antigravity) ou execute manualmente.
+
 ## 📖 Documentação Adicional
 - [**Guia de Instalação (Onboarding)**](INSTALL.md)
 - [**Manifesto Técnico e Arquitetura**](ARCHITECTURE.md)

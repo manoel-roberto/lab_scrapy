@@ -27,6 +27,9 @@ RUN python -m spacy download pt_core_news_sm
 # Copiar o projeto
 COPY . .
 
+# Criar diretório de dados e garantir permissões
+RUN mkdir -p /app/data && chmod 777 /app/data
+
 # Instalar o pacote em modo editável para garantir que 'src' seja encontrado
 RUN pip install -e .
 

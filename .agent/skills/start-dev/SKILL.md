@@ -14,11 +14,12 @@ Ao receber o comando `/start-dev`, você deve seguir estes passos:
 ### 1. Verificação de Infraestrutura
 - **PostgreSQL:** Tentar uma conexão simples via `pg_isready` ou script python.
 - **Ollama:** Verificar se o serviço está respondendo em `localhost:11434` e se os modelos `qwen2.5:1.5b` e `nomic-embed-text` estão presentes.
+- **Diretório de Dados:** Validar se `./data/` existe.
 
 ### 2. Inicialização de Serviços
 Se a infraestrutura estiver OK:
 - Iniciar a **API FastAPI** em background (`uvicorn src.api.main:app`).
-- Iniciar o **Worker** em background (`python3 -m src.worker`).
+- Iniciar o **Worker** em background (`python3 src/worker.py`).
 - Iniciar o **Dashboard Streamlit** (`streamlit run src/ui/app.py`).
 
 ## 🛠️ Scripts de Apoio
@@ -28,6 +29,7 @@ Use este comando para verificar tudo:
 python3 -c "
 import socket
 import requests
+import os
 
 def check_port(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -35,6 +37,7 @@ def check_port(port):
 
 db_ok = check_port(5432)
 ollama_ok = check_port(11434)
+data_ok = os.path.exists('./data')
 
 if ollama_ok:
     try:
@@ -49,6 +52,7 @@ else:
 
 print(f'DB_OK={db_ok}')
 print(f'OLLAMA_OK={ollama_ok}')
+print(f'DATA_OK={data_ok}')
 print(f'QWEN_OK={qwen_ok}')
 print(f'EMBED_OK={embed_ok}')
 "
