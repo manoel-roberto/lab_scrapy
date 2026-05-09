@@ -2,6 +2,9 @@
 
 Este documento detalha as decisões arquiteturais e o fluxo de dados do **DOE-BA Intelligence Engine**.
 
+> [!NOTE]
+> Para uma explicação didática detalhada de cada componente, consulte o **[Livro Mestre da Plataforma](docs/README.md)**.
+
 ## 1. O Fluxo RAG (Retrieval-Augmented Generation)
 
 O sistema opera um pipeline de dados assíncrono projetado para transformar PDFs e HTMLs governamentais em conhecimento acionável.
