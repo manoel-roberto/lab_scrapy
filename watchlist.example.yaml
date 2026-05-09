@@ -1,0 +1,22 @@
+# Template de Configuração de Monitoramento (Watchlist)
+# Renomeie este arquivo para watchlist.yaml e adicione seus termos reais.
+
+# Palavras-chave para busca lexical (Regex)
+keywords:
+  - "Loteamento"
+  - "Licitação"
+  - "Contrato"
+  - "Dispensa"
+  - "Aditivo"
+  - "Exoneração"
+  - "Nomeação"
+
+# Nomes de pessoas ou empresas para monitoramento (NER/Spacy)
+pessoas_monitoradas:
+  - "NOME DO POLITICO OU AUTORIDADE"
+  - "EMPRESA EXEMPLO LTDA"
+
+# Configurações de Notificação (Futuro)
+notifications:
+  enabled: true
+  method: "log" # Opções futuras: slack, telegram, email

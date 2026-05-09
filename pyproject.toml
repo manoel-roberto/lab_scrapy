@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "doe-ba-intelligence"
+version = "1.0.0"
+description = "Motor de scraping e busca semântica para o Diário Oficial da Bahia"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

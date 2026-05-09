@@ -1,0 +1,55 @@
+# Ambiente Virtual
+.venv/
+env/
+venv/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs e Banco de Dados
+*.log
+docker_data/
+pg_data/
+.postgres/
+
+# Configurações do Projeto
+.env
+watchlist.yaml
+!watchlist.example.yaml
+
+# Arquivos Temporários de Scraping
+temp_pdf/
+*.pdf
+outputs/
+.pytest_cache/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Antigravity Kit (Não ignorar se quiser versionar as Skills)
+# A recomendação é usar .git/info/exclude para .agent/
+# .agent/
