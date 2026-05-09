@@ -1,67 +1,83 @@
 # 🗺️ Mapa do Repositório: DOE-BA Intelligence Engine
-> "A maestria técnica nasce do conhecimento profundo de cada engrenagem."
+> "O conhecimento total da estrutura é o que separa um codificador de um Arquiteto de Sistemas."
 
-Olá, aluno! Este é o seu guia definitivo. Abaixo, detalho a função de **cada arquivo** do projeto, dividido por diretórios.
-
----
-
-## 📂 Pasta: `src/` (Código Fonte)
-
-### 🧩 `src/core/` (Cérebro Estrutural)
-- **`client.py`**: O motor de rede. Contém o `DOEBahiaClient` que lida com requisições assíncronas, bypass de modais com Playwright e controle de fluxo via Semaphore.
-- **`models.py`**: Define os contratos de dados usando **Pydantic**. Aqui estão as classes `AtoOficial` e `MetadadosEdicao`.
-- **`config.py`**: Gerencia o carregamento de variáveis de ambiente (`.env`) e configurações da Watchlist.
-
-### 🧠 `src/intelligence/` (Camada de IA)
-- **`engine.py`**: Orquestra o Funil de Inteligência (Regex -> Spacy -> Ollama). Decide qual motor usar para cada ato.
-- **`chunker.py`**: Implementa a lógica de divisão de texto em pedaços de 600 palavras com 10% de overlap.
-- **`embeddings.py`**: Interface com a API do Ollama para transformar texto em vetores de 768 dimensões.
-- **`cleaner.py`**: Limpeza de ruídos (cabeçalhos, rodapés e caracteres especiais) do texto extraído.
-
-### 🕷️ `src/parsers/` (Extratores)
-- **`html_parser.py`**: Especialista em navegar pela estrutura DOM dos diários em formato HTML.
-- **`pdf_parser.py`**: Utiliza bibliotecas como `pdfplumber` para extrair texto de atos anexos em formato PDF.
-
-### 💾 `src/persistence/` (Armazenamento)
-- **`pg_repository.py`**: Gerencia a conexão com o PostgreSQL, criação de tabelas e as buscas vetoriais via `pgvector`.
-- **`jsonl_writer.py`**: Utilitário para salvar atos em arquivos JSONL, servindo como uma trilha de auditoria bruta.
-
-### 🌐 `src/api/` (Porta de Saída)
-- **`main.py`**: Ponto de entrada do servidor **FastAPI**.
-- **`routes.py`**: Define as rotas de busca semântica, listagem de atos e estatísticas do sistema.
-- **`dependencies.py`**: Gerencia a injeção de dependências (como conexões de banco) para as rotas.
-
-### 📊 `src/ui/` (Interface)
-- **`app.py`**: O dashboard construído em **Streamlit**. É onde o usuário final realiza as buscas e visualiza os alertas.
-
-### ⚙️ Raiz do `src/`
-- **`worker.py`**: O processo de segundo plano que monitora novas edições e processa a inteligência continuamente.
-- **`cli.py`**: Interface de linha de comando para tarefas administrativas e testes manuais.
-- **`__init__.py`**: Transforma a pasta em um pacote Python.
+Olá, aluno! Este é o seu **Atlas Técnico**. Abaixo, detalho não apenas onde os arquivos estão, mas **o que eles fazem internamente** e como se conectam.
 
 ---
 
-## 📁 Pasta: `docs/` (Documentação)
-- **`README.md`**: Índice geral do Livro Mestre.
-- **`TECHNICAL_MASTER.md`**: Consolidação técnica profunda da arquitetura.
-- **`MAPA_DO_REPOSITORIO.md`**: Este guia que você está lendo.
-- **Capítulos 01 a 04**: Lições didáticas sobre Scraping, IA, RAG e Infra.
+## 📂 Pasta: `src/` (O Ecossistema de Código)
+
+### 🧩 `src/core/` (Fundações e Contratos)
+- **`client.py`**: 
+    - **Classe:** `DOEBahiaClient`.
+    - **Funções Chave:** `get_editions_by_date` (descoberta), `fetch_content` (download com retry e jitter).
+    - **Detalhe:** Gerencia o pool de conexões HTTP e a automação do navegador Playwright.
+- **`models.py`**: 
+    - **Esquemas:** `AtoOficial` (o objeto principal), `MetadadosEdicao`.
+    - **Papel:** Garante que o dado extraído siga um contrato rígido antes de ser vetorizado.
+- **`config.py`**: 
+    - **Papel:** Centraliza o acesso ao `.env`. Define constantes como `POSTGRES_DSN` e `OLLAMA_URL`.
+
+### 🧠 `src/intelligence/` (O Cérebro RAG)
+- **`engine.py`**: 
+    - **Classe:** `IntelligenceEngine`.
+    - **Lógica:** Implementa as 3 camadas de triagem. Note como a `camada_1_regex` economiza processamento ao descartar atos sem interesse.
+- **`chunker.py`**: 
+    - **Função:** `chunk_text`.
+    - **Matemática:** Usa o `chunk_size=600` e `overlap_size=60` para manter a coesão semântica.
+- **`embeddings.py`**: 
+    - **Classe:** `OllamaEmbeddings`.
+    - **Papel:** Converte texto em vetores. É o ponto de integração com o modelo `nomic-embed-text`.
+- **`cleaner.py`**: 
+    - **Papel:** Regex especializados para limpar "ruído governamental" (brasões, rodapés legais repetitivos).
+
+### 💾 `src/persistence/` (Memória de Longo Prazo)
+- **`pg_repository.py`**: 
+    - **Classe:** `PostgresRepository`.
+    - **Destaque:** Método `search_similar_chunks` que executa a busca semântica via SQL.
+    - **SQL:** Gerencia as tabelas `atos_oficiais` e `atos_chunks`.
+- **`jsonl_writer.py`**: 
+    - **Papel:** Persistência secundária para auditoria fria (cold storage).
+
+### 🌐 `src/api/` (Acesso Externo)
+- **`main.py`**: Inicializa o FastAPI e configura o CORS e Middlewares.
+- **`routes.py`**: 
+    - **Endpoints:** `/search` (busca semântica), `/stats` (dashboard), `/settings` (configurações do worker).
+- **`dependencies.py`**: Injeta a conexão do banco de dados em cada requisição de forma segura.
+
+### 📊 `src/ui/` (A Janela do Usuário)
+- **`app.py`**: Dashboard **Streamlit**. Consome a API do backend para exibir os resultados de forma visual e amigável.
+
+### ⚙️ Orquestradores (Na Raiz do `src/`)
+- **`worker.py`**: O "batimento cardíaco" do sistema. Orquestra o loop: **Busca -> Download -> Limpeza -> Inteligência -> Vetorização**.
+- **`cli.py`**: Ferramenta de linha de comando. Útil para reprocessar datas específicas ou testar a conexão com o banco.
 
 ---
 
-## 📁 Pasta: `data/` (Dados Persistentes)
-- **`logs/`**: Arquivos `.log` que registram cada passo (e erro) do sistema.
-- **`backups/`**: Snapshots do banco para recuperação de desastres.
-- **`temp/`**: Arquivos temporários usados durante o download e parsing de PDFs.
+## 📁 Pasta: `docs/` (Centro de Inteligência)
+- **`TECHNICAL_MASTER.md`**: Onde as decisões arquiteturais pesadas são explicadas.
+- **`01-fundamentos.md` a `04-infra.md`**: Curso didático completo para novos desenvolvedores.
+- **`MAPA_DO_REPOSITORIO.md`**: Este guia que serve como o GPS do projeto.
 
 ---
 
-## 📄 Arquivos de Raiz (Infraestrutura)
-- **`docker-compose.yml`**: Configuração dos serviços Docker (Postgres, Ollama, API, Worker, UI).
-- **`Dockerfile`**: Receita para construir o ambiente de execução Python.
-- **`requirements.txt`**: Lista de dependências Python.
-- **`watchlist.yaml`**: Sua lista personalizada de termos e nomes a serem vigiados.
-- **`.env.example`**: Modelo de configuração de credenciais.
+## 📄 Arquivos de Configuração (O Enquadramento)
+- **`docker-compose.yml`**: Define o ambiente de rede. O serviço `db` usa a imagem `pgvector/pgvector`.
+- **`watchlist.yaml`**: O arquivo mais importante para o usuário final. Define **quem** e **o que** estamos vigiando.
+- **`.env`**: (Não versionado por segurança) Contém as chaves do reino. Use o `.env.example` como guia.
+
+---
+
+## 🔗 Como os Arquivos Conversam? (O Fluxo)
+
+1. `worker.py` usa `client.py` para descobrir novos atos.
+2. `client.py` entrega HTML/PDF para `parsers/`.
+3. `parsers/` entrega texto bruto para `engine.py`.
+4. `engine.py` limpa o texto via `cleaner.py` e valida via `models.py`.
+5. Se for relevante, `chunker.py` quebra o texto.
+6. `embeddings.py` vetoriza os pedaços.
+7. `pg_repository.py` salva tudo no banco.
+8. `ui/app.py` pede dados para `api/main.py`, que consulta o `pg_repository.py`.
 
 ---
 *Professor Sênior & Especialista em IA*
