@@ -26,7 +26,9 @@ pip install -r requirements.txt
 O sistema utiliza um arquivo `.env` para gerenciar configurações sensíveis e de infraestrutura.
 ```bash
 cp .env.example .env
-# Edite o .env se necessário (ex: DATABASE_URL, OLLAMA_HOST)
+# Edite o .env se necessário. Campos obrigatórios:
+# DATABASE_URL=postgresql://user:pass@localhost:5432/doe_ba
+# OLLAMA_HOST=http://localhost:11434
 ```
 
 ### Configuração do Antigravity Kit (AI-Pair)
@@ -49,12 +51,12 @@ docker-compose up -d
 ```
 
 ### Preparando os Modelos de IA
-Certifique-se de que o Ollama está rodando e baixe os modelos necessários:
+Certifique-se de que o Ollama está rodando e baixe os modelos específicos para o Funil de Inteligência:
 ```bash
-# Para extração e análise
+# Camada 3 (Análise e Estruturação)
 ollama pull qwen2.5:1.5b
 
-# Para geração de vetores de busca
+# Engenharia de Busca (Embeddings)
 ollama pull nomic-embed-text
 ```
 

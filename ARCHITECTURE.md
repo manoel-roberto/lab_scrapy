@@ -29,12 +29,45 @@ Cada ato passa por três camadas de análise:
 - **Embeddings:** Os chunks são convertidos em vetores de 768 dimensões usando o modelo `nomic-embed-text`.
 - **Busca Semântica:** O `pgvector` permite consultas de similaridade de cosseno em milissegundos, permitindo encontrar temas correlatos mesmo que os termos exatos não coincidam.
 
+### E. Diagrama de Fluxo de Dados (PDF para Vetor)
+
+```mermaid
+graph TD
+    A[Descoberta: Playwright/API] --> B{Formato?}
+    B -- HTML --> C[Extração Direta]
+    B -- PDF --> D[pdfplumber Extração]
+    C --> E[Limpeza de Texto]
+    D --> E
+    E --> F[Chunking: 600 words / 10% overlap]
+    F --> G[Vetorização: nomic-embed-text]
+    G --> H[Persistência: Postgres + pgvector]
+    H --> I[Busca Semântica / Alertas]
+```
+
 ## 2. Filosofia Local-First
 
 O projeto foi construído sob o princípio de **Soberania de Dados**:
 - **Compliance LGPD:** Nenhum dado pessoal contido no Diário Oficial sai da rede local do usuário.
 - **Eficiência de Custo:** Toda a inteligência é "gratuita" após o download do modelo, sem taxas por tokens ou assinaturas SaaS.
 - **Latência:** A busca semântica local elimina a latência de rede de APIs externas.
+
+### Orquestração de Serviços
+
+```mermaid
+graph LR
+    subgraph Docker_Compose
+        DB[(PostgreSQL + pgvector)]
+        OL[Ollama API]
+        API[FastAPI Backend]
+        WK[Async Worker]
+        UI[Streamlit Dashboard]
+    end
+
+    WK --> DB
+    WK --> OL
+    API --> DB
+    UI --> API
+```
 
 ## 3. Modelo de Dados (PostgreSQL)
 
