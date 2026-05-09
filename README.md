@@ -33,6 +33,15 @@ O pipeline segue o fluxo **RAG (Retrieval-Augmented Generation) Local**:
 5. **Run:** `/start-dev` (via Antigravity) ou execute manualmente.
 
 ## 📖 Documentação Adicional
+
+Para uma compreensão profunda e didática do sistema, consulte nosso **[Livro Mestre da Plataforma](docs/README.md)**, estruturado em capítulos:
+- [**Capítulo 01: Fundamentos de Web Scraping**](docs/01-fundamentos-web-scraping.md)
+- [**Capítulo 02: Inteligência Artificial Local**](docs/02-inteligencia-artificial-local.md)
+- [**Capítulo 03: Arquitetura RAG e Vetores**](docs/03-arquitetura-rag-e-vetores.md)
+- [**Capítulo 04: Infraestrutura e Operações**](docs/04-infraestrutura-e-operacoes.md)
+
+Para engenheiros e auditores:
+- [**TECHNICAL MASTER: Arquitetura Consolidada**](docs/TECHNICAL_MASTER.md)
 - [**Guia de Instalação (Onboarding)**](INSTALL.md)
 - [**Manifesto Técnico e Arquitetura**](ARCHITECTURE.md)
 - [**Configuração de Monitoramento**](watchlist.example.yaml)
