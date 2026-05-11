@@ -83,7 +83,8 @@ async def run_backfill_ingestion(start_date: str, end_date: str, db: PostgresRep
     from src.core.client import DOEBahiaClient
     from src.parsers.html_parser import HTMLParser
     from src.parsers.pdf_parser import PDFParser
-    from src.core.models import AtoOficial, WatchlistConfig
+    from src.core.models import AtoOficial
+    from src.core.config import WatchlistConfig
     from src.intelligence.engine import IntelligenceEngine
     from src.intelligence.chunker import chunk_text
     import logging
