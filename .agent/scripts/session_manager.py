@@ -88,7 +88,7 @@ def print_status(root: Path):
     print(f"\n📁 Project: {info.get('name', root.name)}")
     print(f"📂 Path: {root}")
     print(f"🏷️  Type: {', '.join(info.get('stack', ['Generic']))}")
-    print("📊 Status: Active")
+    print(f"📊 Status: Active")
     
     print("\n🔧 Tech Stack:")
     for tech in info.get('stack', []):
