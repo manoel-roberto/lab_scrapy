@@ -142,7 +142,7 @@ with tab_search:
             
             for res in results:
                 identificador = res.get("ato_identificador")
-                link_html = f"https://diariooficial.egba.ba.gov.br/ver-html/{identificador}/"
+                link_html = f"https://dool.egba.ba.gov.br/apifront/portal/edicoes/publicacoes_ver_conteudo/{identificador}"
                 similarity = res.get('similaridade') or 0
                 
                 with st.container():
@@ -246,7 +246,7 @@ with tab_alerts:
             st.subheader("Detalhes")
             for alert in flat_alerts:
                 identificador = alert.get("identificador")
-                link_html = f"https://diariooficial.egba.ba.gov.br/ver-html/{identificador}/"
+                link_html = f"https://dool.egba.ba.gov.br/apifront/portal/edicoes/publicacoes_ver_conteudo/{identificador}"
                 with st.expander(f"🚨 [{alert.get('termo_match')}] {alert.get('titulo')}"):
                     st.write(f"**Secretaria:** {alert.get('secretaria')}")
                     st.write(f"**Data:** {alert.get('data_publicacao')}")
