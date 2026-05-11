@@ -44,8 +44,9 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+import os
 # URL da API
-API_BASE_URL = "http://localhost:8000"
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 # --- Funções de API ---
 
@@ -68,52 +69,56 @@ def fetch_api(endpoint, method="GET", params=None, json_data=None):
 with st.sidebar:
     st.title("🛡️ Console DOE-BA")
     
-    # Status de Saúde
-    st.subheader("Saúde do Sistema")
-    status_data = fetch_api("/status")
-    settings_data = fetch_api("/settings")
-    
-    col_pg, col_ol = st.columns(2)
-    with col_pg:
-        pg_status = "Online" if status_data else "Offline"
-        class_pg = "status-online" if pg_status == "Online" else "status-offline"
-        st.markdown(f"Postgres: <span class='status-badge {class_pg}'>{pg_status}</span>", unsafe_allow_html=True)
-    
-    with col_ol:
-        # Simplificação: assume online se API responder status
-        ol_status = "Online" if status_data else "Offline"
-        class_ol = "status-online" if ol_status == "Online" else "status-offline"
-        st.markdown(f"Ollama: <span class='status-badge {class_ol}'>{ol_status}</span>", unsafe_allow_html=True)
-
-    st.divider()
-
-    # Configurações Dinâmicas
-    if settings_data:
-        st.subheader("⚙️ Configurações")
-        mon_ativo = st.toggle("Monitoramento Ativo", value=settings_data.get("monitoramento_ativo", True))
-        polling = st.slider("Intervalo de Polling (min)", 1, 120, value=settings_data.get("polling_interval_minutes", 60))
+    @st.fragment(run_every="10s")
+    def render_sidebar_status():
+        # Status de Saúde
+        st.subheader("Saúde do Sistema")
+        status_data = fetch_api("/status")
+        settings_data = fetch_api("/settings")
         
-        if st.button("Salvar Configurações"):
-            res = fetch_api("/settings", method="PUT", json_data={
-                "polling_interval_minutes": polling,
-                "monitoramento_ativo": mon_ativo
-            })
-            if res:
-                st.success("Configurações atualizadas!")
-                st.rerun()
-
-    st.divider()
-    
-    if status_data:
-        stats = status_data.get("estatisticas", {})
-        st.subheader("📊 Estatísticas Gerais")
-        st.metric("Total de Atos", stats.get("total_atos_oficiais", 0))
-        st.metric("Chunks Vetorizados", stats.get("total_chunks_com_embedding", 0))
+        col_pg, col_ol = st.columns(2)
+        with col_pg:
+            pg_status = "Online" if status_data else "Offline"
+            class_pg = "status-online" if pg_status == "Online" else "status-offline"
+            st.markdown(f"Postgres: <span class='status-badge {class_pg}'>{pg_status}</span>", unsafe_allow_html=True)
         
-        progress = 0
-        if stats.get("total_chunks_gerados", 0) > 0:
-            progress = stats.get("total_chunks_com_embedding", 0) / stats.get("total_chunks_gerados", 0)
-        st.progress(progress, text=f"Vetorização: {int(progress*100)}%")
+        with col_ol:
+            ol_status = "Online" if status_data else "Offline"
+            class_ol = "status-online" if ol_status == "Online" else "status-offline"
+            st.markdown(f"Ollama: <span class='status-badge {class_ol}'>{ol_status}</span>", unsafe_allow_html=True)
+
+        st.divider()
+
+        # Configurações Dinâmicas (Mover para fora se o toggle causar re-run do fragmento, 
+        # mas como é fragmento, o estado deve ser mantido localmente)
+        if settings_data:
+            st.subheader("⚙️ Configurações")
+            mon_ativo = st.toggle("Monitoramento Ativo", value=settings_data.get("monitoramento_ativo", True))
+            polling = st.slider("Intervalo de Polling (min)", 1, 120, value=settings_data.get("polling_interval_minutes", 60))
+            
+            if st.button("Salvar Configurações"):
+                res = fetch_api("/settings", method="PUT", json_data={
+                    "polling_interval_minutes": polling,
+                    "monitoramento_ativo": mon_ativo
+                })
+                if res:
+                    st.success("Configurações atualizadas!")
+                    st.rerun()
+
+        st.divider()
+        
+        if status_data:
+            stats = status_data.get("estatisticas", {})
+            st.subheader("📊 Estatísticas Gerais")
+            st.metric("Total de Atos", stats.get("total_atos_oficiais", 0))
+            st.metric("Chunks Vetorizados", stats.get("total_chunks_com_embedding", 0))
+            
+            progress = 0
+            if stats.get("total_chunks_gerados", 0) > 0:
+                progress = stats.get("total_chunks_com_embedding", 0) / stats.get("total_chunks_gerados", 0)
+            st.progress(progress, text=f"Vetorização: {int(progress*100)}%")
+
+    render_sidebar_status()
 
 # --- Main Content ---
 
@@ -137,7 +142,6 @@ with tab_search:
             
             for res in results:
                 identificador = res.get("ato_identificador")
-                # Link direto conforme Spec 2.0
                 link_html = f"https://diariooficial.egba.ba.gov.br/ver-html/{identificador}/"
                 similarity = res.get('similaridade') or 0
                 
@@ -170,23 +174,30 @@ with tab_inventory:
     col_inv, col_back = st.columns([2, 1])
     
     with col_inv:
-        st.subheader("📦 Inventário de Edições")
-        if status_data and status_data.get("inventario"):
-            df_inv = pd.DataFrame(status_data["inventario"])
-            df_inv['data_publicacao'] = pd.to_datetime(df_inv['data_publicacao']).dt.date
-            st.dataframe(
-                df_inv,
-                column_config={
-                    "data_publicacao": "Data da Edição",
-                    "total_atos": "Qtd de Atos",
-                    "total_chunks": "Qtd de Chunks",
-                    "ultima_ingestao": st.column_config.DatetimeColumn("Ingestão", format="DD/MM/YYYY HH:mm")
-                },
-                use_container_width=True,
-                hide_index=True
-            )
-        else:
-            st.info("Nenhum dado de inventário disponível.")
+        @st.fragment(run_every="10s")
+        def render_inventory():
+            st.subheader("📦 Inventário de Edições")
+            st.caption("Atualização automática a cada 10 segundos.")
+            
+            status_data = fetch_api("/status")
+            if status_data and status_data.get("inventario"):
+                df_inv = pd.DataFrame(status_data["inventario"])
+                df_inv['data_publicacao'] = pd.to_datetime(df_inv['data_publicacao']).dt.date
+                st.dataframe(
+                    df_inv,
+                    column_config={
+                        "data_publicacao": "Data da Edição",
+                        "total_atos": "Qtd de Atos",
+                        "total_chunks": "Qtd de Chunks",
+                        "ultima_ingestao": st.column_config.DatetimeColumn("Ingestão", format="DD/MM/YYYY HH:mm")
+                    },
+                    use_container_width=True,
+                    hide_index=True
+                )
+            else:
+                st.info("Nenhum dado de inventário disponível.")
+        
+        render_inventory()
 
     with col_back:
         st.subheader("🕒 Ingestão Histórica")
