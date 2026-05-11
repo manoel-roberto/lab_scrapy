@@ -54,22 +54,32 @@ O projeto foi construído sob o princípio de **Soberania de Dados**:
 - **Eficiência de Custo:** Toda a inteligência é "gratuita" após o download do modelo, sem taxas por tokens ou assinaturas SaaS.
 - **Latência:** A busca semântica local elimina a latência de rede de APIs externas.
 
+### 4. Infraestrutura Conteinerizada
+ 
+O ecossistema é gerenciado via **Docker Compose**, operando em uma rede privada virtual.
+ 
+### Descoberta de Serviços (Service Discovery)
+Para garantir portabilidade entre ambientes de desenvolvimento, staging e produção, utilizamos nomes de host internos:
+- **Banco de Dados:** Acessível via `db:5432`.
+- **Inteligência:** Acessível via `ollama:11434`.
+- **API:** O Dashboard (`ui`) comunica-se com a API via `api:8000`.
+ 
 ### Orquestração de Serviços
-
+ 
 ```mermaid
 graph LR
-    subgraph Docker_Compose
+    subgraph Docker_Network [Rede Privada Docker]
         DB[(PostgreSQL + pgvector)]
         OL[Ollama API]
         API[FastAPI Backend]
         WK[Async Worker]
         UI[Streamlit Dashboard]
     end
-
-    WK --> DB
-    WK --> OL
-    API --> DB
-    UI --> API
+ 
+    WK -- "SQL (port 5432)" --> DB
+    WK -- "Inference (port 11434)" --> OL
+    API -- "SQL (port 5432)" --> DB
+    UI -- "REST (port 8000)" --> API
 ```
 
 ## 3. Modelo de Dados (PostgreSQL)

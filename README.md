@@ -25,12 +25,27 @@ O pipeline segue o fluxo **RAG (Retrieval-Augmented Generation) Local**:
 - **Database:** PostgreSQL + pgvector.
 - **UI:** Streamlit.
 
-## 🚦 Configuração Rápida
-1. **Clone & Venv:** Setup do ambiente Python.
-2. **Ambiente:** `cp .env.example .env` e configure suas variáveis.
-3. **Infra:** `docker-compose up -d` para o banco de dados.
-4. **IA:** `ollama pull qwen2.5:1.5b` e `nomic-embed-text`.
-5. **Run:** `/start-dev` (via Antigravity) ou execute manualmente.
+## 🚦 Configuração Rápida (Developer Onboarding)
+
+O projeto está totalmente conteinerizado. Siga estes passos para ter o ambiente rodando em minutos:
+
+1. **Clone & Config:**
+   ```bash
+   git clone <url-do-repositorio> && cd lab_scrapy
+   cp .env.example .env
+   ```
+2. **Subir Infraestrutura:**
+   ```bash
+   docker compose up -d --build
+   ```
+3. **Preparar IA (Primeira vez):**
+   ```bash
+   docker exec -it doe_ollama ollama pull qwen2.5:1.5b
+   docker exec -it doe_ollama ollama pull nomic-embed-text
+   ```
+4. **Acessar:**
+   - **Dashboard:** [http://localhost:8501](http://localhost:8501)
+   - **API Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ## 📖 Documentação Adicional
 
