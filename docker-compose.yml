@@ -40,6 +40,7 @@ services:
     command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
     environment:
       DATABASE_URL: postgresql://manoel:password@db:5432/doe_ba
+      OLLAMA_HOST: http://ollama:11434
     ports:
       - "8000:8000"
     volumes:
@@ -56,6 +57,7 @@ services:
     command: python src/worker.py
     environment:
       DATABASE_URL: postgresql://manoel:password@db:5432/doe_ba
+      OLLAMA_HOST: http://ollama:11434
     volumes:
       - ./data:/app/data
     depends_on:

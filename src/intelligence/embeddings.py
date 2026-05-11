@@ -1,3 +1,4 @@
+import os
 import asyncio
 import httpx
 import logging
@@ -13,8 +14,8 @@ _MAX_CHARS = 8000
 class OllamaEmbeddings:
     """Cliente assíncrono para gerar embeddings usando Ollama Local."""
 
-    def __init__(self, base_url: str = "http://localhost:11434"):
-        self.base_url = base_url
+    def __init__(self, base_url: str = None):
+        self.base_url = base_url or os.getenv("OLLAMA_HOST", "http://localhost:11434")
         self.client = httpx.AsyncClient(base_url=self.base_url, timeout=60.0)
 
     async def get_embedding(self, text: str, model: str = "nomic-embed-text") -> List[float]:
